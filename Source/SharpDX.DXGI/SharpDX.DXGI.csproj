@@ -8,16 +8,13 @@
     <RootNamespace>SharpDX.DXGI</RootNamespace>
     <AssemblyName>SharpDX.DXGI</AssemblyName>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(SharpDXWin8Core)' == 'false'">
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Adapter.cs" />
     <Compile Include="AssemblyDoc.cs" />
+    <Compile Include="Factory4.cs" />
     <Compile Include="Factory2.cs" />
     <Compile Include="Output1.cs" />
     <Compile Include="NamespaceDoc.cs" />

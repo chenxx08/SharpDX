@@ -20,10 +20,11 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SharpDX.Mathematics.Interop;
 
-namespace SharpDX.Mathematics
+namespace SharpDX
 {
     /// <summary>
     /// Represents a 32-bit color (4 bytes) in the form of RGBA (in byte order: R, G, B, A).
@@ -985,9 +986,10 @@ namespace SharpDX.Mathematics
         /// <param name="left">The first value to compare.</param>
         /// <param name="right">The second value to compare.</param>
         /// <returns><c>true</c> if <paramref name="left"/> has the same value as <paramref name="right"/>; otherwise, <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Color left, Color right)
         {
-            return left.Equals(right);
+            return left.Equals(ref right);
         }
 
         /// <summary>
@@ -996,9 +998,10 @@ namespace SharpDX.Mathematics
         /// <param name="left">The first value to compare.</param>
         /// <param name="right">The second value to compare.</param>
         /// <returns><c>true</c> if <paramref name="left"/> has a different value than <paramref name="right"/>; otherwise, <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Color left, Color right)
         {
-            return !left.Equals(right);
+            return !left.Equals(ref right);
         }
 
         /// <summary>
@@ -1058,6 +1061,17 @@ namespace SharpDX.Mathematics
         public static implicit operator RawColor4(Color value)
         {
             return value.ToColor4();
+        }
+
+
+        /// <summary>
+        /// Performs an implicit conversion from <see cref="Color"/> to <see cref="RawColor4"/>.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The result of the conversion.</returns>
+        public static implicit operator RawColorBGRA(Color value)
+        {
+            return new RawColorBGRA(value.B, value.G, value.R, value.A);
         }
 
         /// <summary>
@@ -1215,9 +1229,23 @@ namespace SharpDX.Mathematics
         /// <returns>
         /// <c>true</c> if the specified <see cref="Color"/> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public bool Equals(Color other)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(ref Color other)
         {
             return R == other.R && G == other.G && B == other.B && A == other.A;
+        }
+
+        /// <summary>
+        /// Determines whether the specified <see cref="Color"/> is equal to this instance.
+        /// </summary>
+        /// <param name="other">The <see cref="Color"/> to compare with this instance.</param>
+        /// <returns>
+        /// <c>true</c> if the specified <see cref="Color"/> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(Color other)
+        {
+            return Equals(ref other);
         }
 
         /// <summary>
@@ -1229,13 +1257,11 @@ namespace SharpDX.Mathematics
         /// </returns>
         public override bool Equals(object value)
         {
-            if (value == null)
+            if (!(value is Color))
                 return false;
 
-            if (!ReferenceEquals(value.GetType(), typeof(Color)))
-                return false;
-
-            return Equals((Color)value);
+            var strongValue = (Color)value;
+            return Equals(ref strongValue);
         }
 
         private static byte ToByte(float component)

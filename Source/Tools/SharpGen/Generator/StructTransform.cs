@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using SharpGen.Logging;
 using SharpGen.CppModel;
@@ -115,19 +116,16 @@ namespace SharpGen.Generator
                 }
 
                 // Current offset of a field
-                int currentOffset = 0;
+                int currentFieldAbsoluteOffset = 0;
 
                 int fieldCount = cppStruct.IsEmpty ? 0 : cppStruct.Items.Count;
 
 
-                // Offset stored for each field
-                int[] offsetOfFields = new int[fieldCount];
-
                 // Last field offset
-                int lastCppFieldOffset = -1;
+                int previousFieldOffsetIndex = -1;
 
                 // Size of the last field
-                int lastFieldSize = 0;
+                int previousFieldSize = 0;
 
                 // 
                 int maxSizeOfField = 0;
@@ -145,6 +143,7 @@ namespace SharpGen.Generator
                     Logger.RunInContext(cppField.ToString(), () =>  
                     {
                         var fieldStruct = Manager.GetCsType<CsField>(cppField, true);
+                        csStruct.Add(fieldStruct);
 
                         // Get name
                         fieldStruct.Name = NamingRules.Rename(cppField);
@@ -153,23 +152,36 @@ namespace SharpGen.Generator
                         if (!fieldStruct.IsBoolToInt && fieldStruct.HasMarshalType)
                             hasMarshalType = true;
 
+
                         // If last field has same offset, then it's a union
                         // CurrentOffset is not moved
-                        if (isInUnion && lastCppFieldOffset != cppField.Offset)
+                        if (isInUnion && previousFieldOffsetIndex != cppField.Offset)
                         {
-                            lastFieldSize = maxSizeOfField;
+                            previousFieldSize = maxSizeOfField;
                             maxSizeOfField = 0;
                             isInUnion = false;
                         }
 
-                        currentOffset += lastFieldSize;
-                        offsetOfFields[cppField.Offset] = currentOffset;
+                        currentFieldAbsoluteOffset += previousFieldSize;
+                        var fieldAlignment = (fieldStruct.MarshalType ?? fieldStruct.PublicType).CalculateAlignment();
+
+                        // If field alignment is < 0, then we have a pointer somewhere so we can't align
+                        if (fieldAlignment > 0)
+                        {
+                            // otherwise, align the field on the alignment requirement of the field
+                            int delta = (currentFieldAbsoluteOffset % fieldAlignment);
+                            if (delta != 0)
+                            {
+                                currentFieldAbsoluteOffset += fieldAlignment - delta;
+                            }
+                        }
+
                         // Get correct offset (for handling union)
-                        fieldStruct.Offset = offsetOfFields[cppField.Offset];
+                        fieldStruct.Offset = currentFieldAbsoluteOffset;
                         fieldStruct.IsBitField = cppField.IsBitField;
 
                         // Handle bit fields : calculate BitOffset and BitMask for this field
-                        if (lastCppFieldOffset != cppField.Offset)
+                        if (previousFieldOffsetIndex != cppField.Offset)
                         {
                             cumulatedBitOffset = 0;
                         }
@@ -178,32 +190,57 @@ namespace SharpGen.Generator
                             int lastCumulatedBitOffset = cumulatedBitOffset;
                             cumulatedBitOffset += cppField.BitOffset;
                             fieldStruct.BitMask = ((1 << cppField.BitOffset) - 1); // &~((1 << (lastCumulatedBitOffset + 1)) - 1);
-                            //fieldStruct.BitMask2 = ((1 << cppField.BitOffset) - 1); // &~((1 << (lastCumulatedBitOffset + 1)) - 1);
                             fieldStruct.BitOffset = lastCumulatedBitOffset;
                         }
-                        csStruct.Add(fieldStruct);
-                        // TODO : handle packing rules here!!!!!
 
-                        // If last field has same offset, then it's a union
-                        // CurrentOffset is not moved
-                        if (lastCppFieldOffset == cppField.Offset ||
-                            ((fieldIndex + 1) < fieldCount &&
-                             (cppStruct.Items[fieldIndex + 1] as CppField).Offset == cppField.Offset))
+
+                        var nextFieldIndex = fieldIndex + 1;
+                        if ((previousFieldOffsetIndex == cppField.Offset)
+                           || (nextFieldIndex < fieldCount && ((CppField)cppStruct.Items[nextFieldIndex]).Offset == cppField.Offset))
                         {
+                            if(previousFieldOffsetIndex != cppField.Offset)
+                            {
+                                maxSizeOfField = 0;
+                            }
+                            maxSizeOfField = fieldStruct.SizeOf > maxSizeOfField ? fieldStruct.SizeOf : maxSizeOfField;
                             isInUnion = true;
                             csStruct.ExplicitLayout = true;
-                            maxSizeOfField = fieldStruct.SizeOf > maxSizeOfField ? fieldStruct.SizeOf : maxSizeOfField;
-                            lastFieldSize = 0;
+                            previousFieldSize = 0;
                         }
                         else
                         {
-                            lastFieldSize = fieldStruct.SizeOf;
+                            previousFieldSize = fieldStruct.SizeOf;
                         }
-                        lastCppFieldOffset = cppField.Offset;
-
+                        previousFieldOffsetIndex = cppField.Offset;
                     });
                 }
-            csStruct.SizeOf = currentOffset + lastFieldSize;
+
+            // In case of explicit layout, check that we can safely generate it on both x86 and x64 (in case of an union
+            // using pointers, we can't)
+            if(csStruct.ExplicitLayout)
+            {
+                var fieldList = csStruct.Fields.ToList();
+                for(int i = 0; i < fieldList.Count; i++)
+                {
+                    var field = fieldList[i];
+                    var fieldAlignment = (field.MarshalType ?? field.PublicType).CalculateAlignment();
+
+                    if(fieldAlignment < 0)
+                    {
+                        // If pointer field is not the last one, than we can't handle it
+                        if ((i + 1) < fieldList.Count)
+                        {
+                            Logger.Error(
+                                "The field [{0}] in structure [{1}] has pointer alignment within a structure that contains an union. An explicit layout cannot be handled on both x86/x64. This structure needs manual layout (remove fields from definition) and write them manually in xml mapping files",
+                                field.CppElementName,
+                                csStruct.CppElementName);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            csStruct.SizeOf = currentFieldAbsoluteOffset + previousFieldSize;
             csStruct.HasMarshalType = hasMarshalType;
         }
     }

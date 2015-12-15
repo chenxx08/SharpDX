@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using SharpDX.XAudio2;
 
 namespace SharpDX.XAPO
 {
@@ -28,15 +29,20 @@ namespace SharpDX.XAPO
     /// <typeparam name="T">the parameter type of this AudioProcessor</typeparam>
     public abstract partial class AudioProcessorParamNative<T> : AudioProcessorNative where T : struct
     {
+        private readonly XAudio2.XAudio2 device;
+        private static readonly Guid CLSID_ParameterProvider_27 = new Guid("a90bc001-e897-e897-55e4-9e4700000001");
+
         private ParameterProviderNative _parameterProviderNative;
         private int _sizeOfParamT = Utilities.SizeOf<T>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AudioProcessorParamNative&lt;T&gt;"/> class.
+        /// Initializes a new instance of the <see cref="AudioProcessorParamNative&lt;T&gt;" /> class.
         /// </summary>
-        /// <param name="basePtr">The base PTR.</param>
-        protected AudioProcessorParamNative(IntPtr basePtr) : base(basePtr)
+        /// <param name="device">The device.</param>
+        protected AudioProcessorParamNative(SharpDX.XAudio2.XAudio2 device) : base(IntPtr.Zero)
         {
+            if (device == null) throw new ArgumentNullException("device");
+            this.device = device;
         }
 
         /// <summary>
@@ -49,11 +55,13 @@ namespace SharpDX.XAPO
             if (NativePointer != IntPtr.Zero)
             {
                 IntPtr parameterProviderPtr;
-                QueryInterface(Utilities.GetGuidFromType(typeof (ParameterProvider)), out parameterProviderPtr);
+                var guid = device.Version == XAudio2Version.Version27
+                    ? CLSID_ParameterProvider_27
+                    : Utilities.GetGuidFromType(typeof(ParameterProvider));
+                QueryInterface(guid, out parameterProviderPtr);
                 _parameterProviderNative = new ParameterProviderNative(parameterProviderPtr);
             }
         }
-
 
         /// <summary>
         /// Get or Set the parameters for this AudioProcessor

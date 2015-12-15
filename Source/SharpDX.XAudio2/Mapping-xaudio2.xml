@@ -224,6 +224,7 @@
     // *****************************************************************
     -->
     <map interface="IXAudio2(.+)" name-tmp="$1" />
+    <map method="IXAudio2::.*" custom-vtbl="true"/>
     <map interface="IXAudio2" name="XAudio2" />
     <map method="IXAudio2::Initialize" visibility="internal" />
     <map method="IXAudio2::GetDeviceDetails" visibility="internal" />
@@ -249,6 +250,9 @@
     <map param="IXAudio2SourceVoice::Stop::Flags" type="XAUDIO2_PLAY_FLAGS" />
     <map method="IXAudio2SourceVoice::SubmitSourceBuffer" visibility="internal" />
     <map param="pBufferWMA" type="void" attribute="in"/>
+    
+    <map method="IXAudio2Voice::GetVoiceDetails" property="false"/>
+    <map method="IXAudio2MasteringVoice::GetChannelMask" property="false"/>
 
     <ifdef name="DIRECTX11_1">
       <map method="IXAudio2SourceVoice::GetState" visibility="internal" />
@@ -262,12 +266,9 @@
     // XAudio2 Functions
     // *****************************************************************
     -->
-    <ifdef name="DIRECTX11_1">
-      <map function="XAudio2Create" dll='"#(XAUDIO2_DLL_A)"' group="SharpDX.XAudio2.XAudio2Functions" />
-      <map function="CreateAudio.*" dll='"#(XAUDIO2_DLL_A)"' group="SharpDX.XAudio2.XAudio2Functions" />
-      <map param="XAudio2Create::ppXAudio2" attribute="out fast"/>
-      <map param="CreateAudio.*::ppApo" attribute="out fast"/>
-    </ifdef>
+    <!-- Remove these functions as they are handled manually -->
+    <remove function="XAudio2Create"/>
+    <remove function="CreateAudio.*"/>
     
     <!--<remove function="XAudio2Create.*"/>-->
     <ifndef name="DIRECTX11_1">

@@ -19,9 +19,10 @@
 // THE SOFTWARE.
 
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SharpDX.Mathematics
+namespace SharpDX
 {
     /// <summary>
     /// A half precision (16 bit) floating point value.
@@ -88,7 +89,7 @@ namespace SharpDX.Mathematics
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref = "T:SharpDX.Mathematics.Half" /> structure.
+        /// Initializes a new instance of the <see cref = "T:SharpDX.Half" /> structure.
         /// </summary>
         /// <param name = "value">The floating point value that should be stored in 16 bit format.</param>
         public Half(float value)
@@ -97,7 +98,7 @@ namespace SharpDX.Mathematics
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref = "T:SharpDX.Mathematics.Half" /> structure.
+        /// Initializes a new instance of the <see cref = "T:SharpDX.Half" /> structure.
         /// </summary>
         /// <param name = "rawvalue">The floating point value that should be stored in 16 bit format.</param>
         public Half(ushort rawvalue)
@@ -141,7 +142,7 @@ namespace SharpDX.Mathematics
         }
 
         /// <summary>
-        /// Performs an explicit conversion from <see cref = "T:System.Single" /> to <see cref = "T:SharpDX.Mathematics.Half" />.
+        /// Performs an explicit conversion from <see cref = "T:System.Single" /> to <see cref = "T:SharpDX.Half" />.
         /// </summary>
         /// <param name = "value">The value to be converted.</param>
         /// <returns>The converted value.</returns>
@@ -151,7 +152,7 @@ namespace SharpDX.Mathematics
         }
 
         /// <summary>
-        /// Performs an implicit conversion from <see cref = "T:SharpDX.Mathematics.Half" /> to <see cref = "T:System.Single" />.
+        /// Performs an implicit conversion from <see cref = "T:SharpDX.Half" /> to <see cref = "T:System.Single" />.
         /// </summary>
         /// <param name = "value">The value to be converted.</param>
         /// <returns>The converted value.</returns>
@@ -212,6 +213,7 @@ namespace SharpDX.Mathematics
         /// <returns>
         /// <c>true</c> if <paramref name = "value1" /> is the same instance as <paramref name = "value2" /> or 
         /// if both are <c>null</c> references or if <c>value1.Equals(value2)</c> returns <c>true</c>; otherwise, <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(ref Half value1, ref Half value2)
         {
             return value1.value == value2.value;
@@ -236,16 +238,10 @@ namespace SharpDX.Mathematics
         /// <c>true</c> if the current instance is equal to the specified object; <c>false</c> otherwise.</returns>
         public override bool Equals(object obj)
         {
-            if (obj == null)
-            {
+            if (!(obj is Half))
                 return false;
-            }
-            if (!ReferenceEquals(obj.GetType(), typeof(Half)))
-            {
-                return false;
-            }
-            Half half = (Half) obj;
-            return half.value == value;
+
+            return Equals((Half)obj);
         }
 
         static Half()

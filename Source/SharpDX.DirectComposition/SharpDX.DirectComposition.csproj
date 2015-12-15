@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SharpDXDesktopOnly>true</SharpDXDesktopOnly>
+  </PropertyGroup>
   <Import Project="$(SolutionDir)\Build\SharpDX.PreSettings.targets" />
   <PropertyGroup>
     <ProductVersion>8.0.30703</ProductVersion>
@@ -9,7 +12,7 @@
     <AssemblyName>SharpDX.DirectComposition</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(SharpDXWin8)' == 'false'">
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -56,6 +59,10 @@
     <None Include="SharpDX.DirectComposition.nuspec" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SharpDX.Direct2D1\SharpDX.Direct2D1.csproj">
+      <Project>{c97878f4-1510-4bba-8153-bd71da7d50d8}</Project>
+      <Name>SharpDX.Direct2D1</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SharpDX.DXGI\SharpDX.DXGI.csproj">
       <Project>{3fc6de77-b412-4101-9e64-6b9aa831179b}</Project>
       <Name>SharpDX.DXGI</Name>

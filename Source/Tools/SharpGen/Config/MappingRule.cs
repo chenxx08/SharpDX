@@ -74,6 +74,13 @@ namespace SharpGen.Config
         [XmlAttribute("property")]
         public bool _Property_ { get { return Property.Value; } set { Property = value; } } public bool ShouldSerialize_Property_() { return Property != null; }
 
+        /// <summary>
+        /// Use to output vtbl offsets for methods as private fields that can be modified
+        /// </summary>
+        [XmlIgnore]
+        public bool? CustomVtbl { get; set; }
+        [XmlAttribute("custom-vtbl")]
+        public bool _CustomVtbl_ { get { return CustomVtbl.Value; } set { CustomVtbl = value; } } public bool ShouldSerialize_CustomVtbl_() { return CustomVtbl != null; }
 
         /// <summary>
         /// Used for property zith COM Objects, in order to persist the getter
@@ -242,7 +249,7 @@ namespace SharpGen.Config
         /// </summary>
         [XmlAttribute("dll")]
         public string FunctionDllName { get; set; }
-
+        
         /// <summary>
         /// By default true for DLL import
         /// </summary>
@@ -250,6 +257,16 @@ namespace SharpGen.Config
         public bool? UseDllImport { get; set; }
         [XmlAttribute("dllimport")]
         public bool _UseDllImport_ { get { return UseDllImport.Value; } set { UseDllImport = value; } } public bool ShouldSerialize_UseDllImport_() { return UseDllImport != null; }
+
+        /// <summary>
+        /// Used to duplicate methods taking pointers and generate an additional private method with pure pointer. This method
+        /// is also disabling renaming
+        /// </summary>
+        /// <value><c>true</c> if [raw PTR]; otherwise, <c>false</c>.</value>
+        [XmlIgnore]
+        public bool? RawPtr { get; set; }
+        [XmlAttribute("rawptr")]
+        public bool _RawPtr_ { get { return RawPtr.Value; } set { RawPtr = value; } } public bool ShouldSerialize_RawPtr_() { return RawPtr != null; }
 
         /// <summary>
         /// DLL name attached to a function

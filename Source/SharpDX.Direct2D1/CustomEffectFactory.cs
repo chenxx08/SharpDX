@@ -17,17 +17,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-#if DIRECTX11_1
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Reflection;
-using System.Runtime.InteropServices;
-#if WIN8METRO
-using System.Xml.Linq;
-#endif
 
 namespace SharpDX.Direct2D1
 {
@@ -47,11 +42,16 @@ namespace SharpDX.Direct2D1
         private XDocument xml;
 
         public CustomEffectFactory(CustomEffectFactoryDelegate factory, Type customEffectType)
+            : this (factory, customEffectType, Utilities.GetGuidFromType(customEffectType))
+        {
+        }
+
+        public CustomEffectFactory(CustomEffectFactoryDelegate factory, Type customEffectType, Guid effectId)
         {
             this.customEffectType = customEffectType;
 
             // Gets the guid of this class
-            Guid = Utilities.GetGuidFromType(customEffectType);
+            Guid = effectId;
 
             unsafe
             {
@@ -87,11 +87,7 @@ namespace SharpDX.Direct2D1
         private void InitializeBindings()
         {
             var bindings = new List<PropertyBinding>();
-#if WIN8METRO
             foreach (var propertyInfo in customEffectType.GetTypeInfo().DeclaredProperties)
-#else
-            foreach (var propertyInfo in customEffectType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-#endif
             {
                 var binding = PropertyBinding.Get(customEffectType, propertyInfo);
                 if (binding != null) 
@@ -125,11 +121,7 @@ namespace SharpDX.Direct2D1
             var effect = new XElement("Effect");
             xml.Add(effect);
 
-#if WIN8METRO
             var customEffectTypeInfo = customEffectType.GetTypeInfo();
-#else
-            var customEffectTypeInfo = customEffectType;
-#endif
 
             // Add 
             var customEffectAttribute = Utilities.GetCustomAttribute<CustomEffectAttribute>(customEffectTypeInfo, true);
@@ -182,7 +174,6 @@ namespace SharpDX.Direct2D1
             return Result.Ok.Code;
         }
 
-#if !WIN8METRO
         // Because we don't want any dependencies on Linq, used a minimalist compatible code to serialize XML
         private enum SaveOptions
         {
@@ -307,8 +298,5 @@ namespace SharpDX.Direct2D1
                 builder.AppendFormat("{0}='{1}'", Name, Value);
             }
         }
-#endif
-
     }
 }
-#endif

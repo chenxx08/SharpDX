@@ -122,6 +122,9 @@ namespace SharpGen.Model
 
             IsPersistent = tag.Persist.HasValue && tag.Persist.Value;
 
+            if(tag.CustomVtbl.HasValue)
+                CustomVtbl = tag.CustomVtbl.Value;
+
             if (tag.MethodCheckReturnType.HasValue)
                 CheckReturnType = tag.MethodCheckReturnType.Value;
 
@@ -130,6 +133,9 @@ namespace SharpGen.Model
 
             if (tag.AlwaysReturnHResult.HasValue) 
                 AlwaysReturnHResult = tag.AlwaysReturnHResult.Value;
+
+            if(tag.RawPtr.HasValue)
+                RequestRawPtr = tag.RawPtr.Value;
         }
 
         /// <summary>
@@ -143,7 +149,11 @@ namespace SharpGen.Model
 
         public bool AllowProperty { get; set; }
 
+        public bool CustomVtbl { get; set; }
+
         public bool IsPersistent { get; set; }
+
+        public bool RequestRawPtr { get; set; }
 
         public int Offset { get; set; }
 

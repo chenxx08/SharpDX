@@ -17,7 +17,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-#if DIRECTX11_1
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,10 +29,11 @@ namespace SharpDX.Direct2D1
     [AttributeUsage(AttributeTargets.Property, Inherited = true)]
     public class PropertyBindingAttribute : Attribute
     {
-        private int order;
-        private string min;
-        private string max;
-        private string defaultValue;
+        private readonly PropertyType bindingType;
+        private readonly int order;
+        private readonly string min;
+        private readonly string max;
+        private readonly string defaultValue;
 
         /// <summary>
         /// Initializes a new instance of <see cref="PropertyBindingAttribute"/> attribute.
@@ -42,12 +42,33 @@ namespace SharpDX.Direct2D1
         /// <param name="min">Minimum value of this property</param>
         /// <param name="max">Maximum value of this property</param>
         /// <param name="defaultValue">Default value of this property</param>
-        public PropertyBindingAttribute(int order, string min, string max, string defaultValue)
+        public PropertyBindingAttribute(int order, string min, string max, string defaultValue) : this(PropertyType.Unknown, order, min, max, defaultValue)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="PropertyBindingAttribute"/> attribute.
+        /// </summary>
+        /// <param name="bindingType">Type of binding</param>
+        /// <param name="order">Order of the property</param>
+        /// <param name="min">Minimum value of this property</param>
+        /// <param name="max">Maximum value of this property</param>
+        /// <param name="defaultValue">Default value of this property</param>
+        public PropertyBindingAttribute(PropertyType bindingType, int order, string min, string max, string defaultValue)
+        {
+            this.bindingType = bindingType;
             this.order = order;
             this.min = min;
             this.max = max;
             this.defaultValue = defaultValue; 
+        }
+
+        /// <summary>
+        /// Gets binding type.
+        /// </summary>
+        public PropertyType BindingType
+        {
+            get { return bindingType; }
         }
 
         /// <summary>
@@ -104,4 +125,3 @@ namespace SharpDX.Direct2D1
         }
     }
 }
-#endif

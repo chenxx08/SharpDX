@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if DIRECTX11_1
+using System;
 using SharpDX.Mathematics.Interop;
 
 namespace SharpDX.Direct2D1
@@ -39,11 +39,11 @@ namespace SharpDX.Direct2D1
             : this()
         {
             ContentBounds = contentBounds;
-            geometricMask_ = geometryMask.NativePointer;
+            GeometricMaskPointer = geometryMask.NativePointer;
             MaskAntialiasMode = maskAntialiasMode;
             MaskTransform = maskTransform;
             Opacity = opacity;
-            opacityBrush_ = opacityBrush.NativePointer;
+            OpacityBrushPointer = opacityBrush.NativePointer;
             LayerOptions = layerOptions;
         }
 
@@ -57,8 +57,9 @@ namespace SharpDX.Direct2D1
         public Geometry GeometricMask
         {
             set
+
             {
-                geometricMask_ = value.NativePointer;
+                GeometricMaskPointer = value == null ? IntPtr.Zero : value.NativePointer;
             }
         }
 
@@ -73,9 +74,8 @@ namespace SharpDX.Direct2D1
         {
             set
             {
-                opacityBrush_ = value.NativePointer;
+                OpacityBrushPointer = value == null ? IntPtr.Zero : value.NativePointer;
             }
         }
     }
 }
-#endif

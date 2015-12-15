@@ -31,22 +31,38 @@ namespace SharpDX.XAudio2.Fx
         /// <summary>
         /// Initializes a new instance of the <see cref="Reverb"/> class.
         /// </summary>
-        public Reverb() : this(false)
+        public Reverb(XAudio2 device) : this(device, false)
         {            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Reverb"/> class.
         /// </summary>
-        public Reverb(bool isUsingDebug)
-            : base(IntPtr.Zero)
+        public Reverb(XAudio2 device, bool isUsingDebug)
+            : base(device)
         {
-#if DIRECTX11_1
-            XAudio2Functions.CreateAudioReverb(this);
-#else
-            Guid clsid = (isUsingDebug) ? XAudio2FxContants.CLSID_AudioReverb_Debug : XAudio2FxContants.CLSID_AudioReverb;
-            Utilities.CreateComInstance(clsid, Utilities.CLSCTX.ClsctxInprocServer, Utilities.GetGuidFromType(typeof(AudioProcessor)), this);
+#if DESKTOP_APP
+            if (device.Version == XAudio2Version.Version27)
+            {
+                Guid clsid = (isUsingDebug) ? XAudio2FxContants.CLSID_AudioReverb_Debug : XAudio2FxContants.CLSID_AudioReverb;
+                Utilities.CreateComInstance(clsid, Utilities.CLSCTX.ClsctxInprocServer, XAudio2FxContants.CLSID_IAudioProcessor, this);
+                return;
+            }
 #endif
+            if (device.Version == XAudio2Version.Version28)
+            {
+                XAudio28Functions.CreateAudioReverb(this);
+            }
+#if STORE_APP_10
+            else if (device.Version == XAudio2Version.Version29)
+            {
+                XAudio29Functions.CreateAudioReverb(this);
+            }
+#endif
+            else
+            {
+                throw new InvalidOperationException("XAudio2 must be initialized before calling this constructor");
+            }
         }
     }
 }

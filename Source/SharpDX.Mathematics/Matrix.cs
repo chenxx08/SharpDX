@@ -45,10 +45,11 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SharpDX.Mathematics.Interop;
 
-namespace SharpDX.Mathematics
+namespace SharpDX
 {
     /// <summary>
     /// Represents a 4x4 mathematical matrix.
@@ -59,7 +60,7 @@ namespace SharpDX.Mathematics
         /// <summary>
         /// The size of the <see cref="Matrix"/> type, in bytes.
         /// </summary>
-        public static readonly int SizeInBytes = Marshal.SizeOf(typeof(Matrix));
+        public static readonly int SizeInBytes = 4 * 4 * sizeof(float);
 
         /// <summary>
         /// A <see cref="Matrix"/> with all of its components set to zero.
@@ -3096,6 +3097,7 @@ namespace SharpDX.Mathematics
         /// <param name="left">The first value to compare.</param>
         /// <param name="right">The second value to compare.</param>
         /// <returns><c>true</c> if <paramref name="left"/> has the same value as <paramref name="right"/>; otherwise, <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Matrix left, Matrix right)
         {
             return left.Equals(ref right);
@@ -3107,6 +3109,7 @@ namespace SharpDX.Mathematics
         /// <param name="left">The first value to compare.</param>
         /// <param name="right">The second value to compare.</param>
         /// <returns><c>true</c> if <paramref name="left"/> has a different value than <paramref name="right"/>; otherwise, <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Matrix left, Matrix right)
         {
             return !left.Equals(ref right);
@@ -3243,6 +3246,7 @@ namespace SharpDX.Mathematics
         /// <returns>
         /// <c>true</c> if the specified <see cref="Matrix"/> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Matrix other)
         {
             return Equals(ref other);

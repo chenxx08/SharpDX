@@ -20,9 +20,11 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using SharpDX.Mathematics.Interop;
 
-namespace SharpDX.Mathematics
+namespace SharpDX
 {
     /// <summary>
     /// Define a RectangleF. This structure is slightly different from System.Drawing.RectangleF as it is
@@ -412,18 +414,39 @@ namespace SharpDX.Mathematics
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (obj.GetType() != typeof(RectangleF)) return false;
-            return Equals((RectangleF)obj);
+            if(!(obj is RectangleF))
+                return false;
+
+            var strongValue = (RectangleF)obj;
+            return Equals(ref strongValue);
         }
 
-        /// <inheritdoc/>
-        public bool Equals(RectangleF other)
+        /// <summary>
+        /// Determines whether the specified <see cref="RectangleF"/> is equal to this instance.
+        /// </summary>
+        /// <param name="other">The <see cref="RectangleF"/> to compare with this instance.</param>
+        /// <returns>
+        /// <c>true</c> if the specified <see cref="RectangleF"/> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Equals(ref RectangleF other)
         {
             return MathUtil.NearEqual(other.Left, Left) &&
                    MathUtil.NearEqual(other.Right, Right) &&
                    MathUtil.NearEqual(other.Top, Top) &&
                    MathUtil.NearEqual(other.Bottom, Bottom);
+        }
+
+        /// <summary>
+        /// Determines whether the specified <see cref="RectangleF"/> is equal to this instance.
+        /// </summary>
+        /// <param name="other">The <see cref="RectangleF"/> to compare with this instance.</param>
+        /// <returns>
+        /// <c>true</c> if the specified <see cref="RectangleF"/> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(RectangleF other)
+        {
+            return Equals(ref other);
         }
 
         /// <summary>
@@ -455,9 +478,10 @@ namespace SharpDX.Mathematics
         /// <param name="left">The left.</param>
         /// <param name="right">The right.</param>
         /// <returns>The result of the operator.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(RectangleF left, RectangleF right)
         {
-            return left.Equals(right);
+            return left.Equals(ref right);
         }
 
         /// <summary>
@@ -466,9 +490,10 @@ namespace SharpDX.Mathematics
         /// <param name="left">The left.</param>
         /// <param name="right">The right.</param>
         /// <returns>The result of the operator.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(RectangleF left, RectangleF right)
         {
-            return !(left == right);
+            return !left.Equals(ref right);
         }
 
         /// <summary>
@@ -480,6 +505,28 @@ namespace SharpDX.Mathematics
         public static explicit operator Rectangle(RectangleF value)
         {
             return new Rectangle((int)value.X, (int)value.Y, (int)value.Width, (int)value.Height);
+        }
+
+        /// <summary>
+        /// Performs an explicit conversion to <see cref="Rectangle"/> structure.
+        /// </summary>
+        /// <remarks>Performs direct float to int conversion, any fractional data is truncated.</remarks>
+        /// <param name="value">The source <see cref="RawRectangle"/> value.</param>
+        /// <returns>A converted <see cref="Rectangle"/> structure.</returns>
+        public static implicit operator RawRectangle(RectangleF value)
+        {
+            return new RawRectangle((int)value.X, (int)value.Y, (int)value.Right, (int)value.Bottom);
+        }
+
+        /// <summary>
+        /// Performs an explicit conversion to <see cref="RawRectangleF"/> structure.
+        /// </summary>
+        /// <remarks>Performs direct float to int conversion, any fractional data is truncated.</remarks>
+        /// <param name="value">The source <see cref="RectangleF"/> value.</param>
+        /// <returns>A converted <see cref="Rectangle"/> structure.</returns>
+        public static implicit operator RawRectangleF(RectangleF value)
+        {
+            return new RawRectangleF(value.X, value.Y, value.Right, value.Bottom);
         }
     }
 }

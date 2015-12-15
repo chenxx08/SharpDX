@@ -28,9 +28,7 @@
   <assembly>SharpDX.Direct2D1</assembly>
   
   <include file="dwrite.h" attach="true" output="DirectWrite"/>
-  <ifdef name="DIRECTX11_1">
-    <include file="dwrite_1.h" attach="true" output="DirectWrite"/>
-  </ifdef>
+  <include file="dwrite_1.h" attach="true" output="DirectWrite"/>
 
   <naming />
   
@@ -201,6 +199,9 @@
     
     <map method="IDWriteLocalFontFileLoader::GetFilePath.*" visibility="internal"/>
     <map method="IDWriteLocalFontFileLoader::GetLastWriteTimeFromKey" visibility="internal"/>
+
+    <map method="IDWriteBitmapRenderTarget::DrawGlyphRun" visibility="private"/>
+    <map param="IDWriteBitmapRenderTarget::DrawGlyphRun::textColor" type="int"/>
 
     <!--
     // *****************************************************************

@@ -17,8 +17,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-#if DIRECTX11_1
-
 using System;
 using System.Reflection;
 using System.Collections.Generic;
@@ -79,17 +77,28 @@ namespace SharpDX.Direct2D1
         /// <param name="effectFactory"></param>
         public void RegisterEffect<T>(Func<T> effectFactory) where T : CustomEffect
         {
+            var effectId = Utilities.GetGuidFromType(typeof(T));
+            RegisterEffect<T>(effectFactory, effectId);
+        }
+
+        /// <summary>
+        /// Register a <see cref="CustomEffect"/> factory.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="effectFactory"></param>
+        /// <param name="effectId"></param>
+        public void RegisterEffect<T>(Func<T> effectFactory, Guid effectId) where T : CustomEffect
+        {
             CustomEffectFactory factory;
-            var guid = Utilities.GetGuidFromType(typeof(T));
             lock (registeredEffects)
             {
-                if (registeredEffects.ContainsKey(guid))
+                if (registeredEffects.ContainsKey(effectId))
                     throw new ArgumentException("An effect is already registered with this GUID", "effectFactory");
 
-                factory = new CustomEffectFactory(() => effectFactory(), typeof(T));
-                registeredEffects.Add(guid, factory);
+                factory = new CustomEffectFactory(() => effectFactory(), typeof(T), effectId);
+                registeredEffects.Add(effectId, factory);
             }
-            RegisterEffectFromString(guid, factory.ToXml(), factory.Bindings, factory.Bindings.Length, factory.NativePointer);
+            RegisterEffectFromString(effectId, factory.ToXml(), factory.Bindings, factory.Bindings.Length, factory.NativePointer);
         }
 
         /// <summary>
@@ -98,18 +107,27 @@ namespace SharpDX.Direct2D1
         /// <typeparam name="T">Type of </typeparam>
         public void RegisterEffect<T>() where T : CustomEffect, new()
         {
+            RegisterEffect<T>(Utilities.GetGuidFromType(typeof(T)));
+        }
+
+        /// <summary>
+        /// Register a <see cref="CustomEffect"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of </typeparam>
+        /// <param name="effectId"></param>
+        public void RegisterEffect<T>(Guid effectId) where T : CustomEffect, new()
+        {
             CustomEffectFactory factory;
-            var guid = Utilities.GetGuidFromType(typeof(T));
             lock (registeredEffects)
             {
-                if (registeredEffects.ContainsKey(guid))
+                if (registeredEffects.ContainsKey(effectId))
                     throw new ArgumentException("An effect is already registered with this GUID", "effectFactory");
 
-                factory = new CustomEffectFactory(() => new T(), typeof(T));
-                registeredEffects.Add(guid, factory);
+                factory = new CustomEffectFactory(() => new T(), typeof(T), effectId);
+                registeredEffects.Add(effectId, factory);
             }
 
-            RegisterEffectFromString(guid, factory.ToXml(), factory.Bindings, factory.Bindings.Length, factory.NativePointer);
+            RegisterEffectFromString(effectId, factory.ToXml(), factory.Bindings, factory.Bindings.Length, factory.NativePointer);
         }
 
         /// <summary>
@@ -134,4 +152,3 @@ namespace SharpDX.Direct2D1
         }
     }
 }
-#endif
